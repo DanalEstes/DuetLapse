@@ -38,8 +38,8 @@ printerState = 0 # State machine for print idle before print, printing, idle aft
 # parse command line arguments
 parser = argparse.ArgumentParser(description='Program to create time lapse video from camera pointed at Duet3D based printer.')
 parser.add_argument('-duet',type=str,nargs=1,help='Name or IP address of Duet printer.',required=True)
-parser.add_argument('-camera',type=str,nargs=1,help='Camera type',choices=['usb','pi','web','dlsr'],default=['usb'])
-parser.add_argument('-interval',type=str,nargs=1,help='Interval in seconds, or trigger [nnn|layer|layerPause]',default=['layer'])
+parser.add_argument('-camera',type=str,nargs=1,choices=['usb','pi','web','dlsr'],default=['usb'])
+parser.add_argument('-interval',type=str,nargs=1,choices= ['nnn seconds', 'layer', 'layerPause'],default=['layer'])
 args=vars(parser.parse_args())
 duet     = args['duet'][0]
 camera   = args['camera'][0]
