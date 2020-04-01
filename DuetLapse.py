@@ -34,9 +34,10 @@ except ImportError:
 
 
 # Globals.
-zo = 0           # Z coordiante Old
-frame = 0        # Frame counter for file names
-printerState = 0 # State machine for print idle before print, printing, idle after print. 
+zo = 0             # Z coordinate old
+frame = 0          # Frame counter for file names
+printerState  = 0  # State machine for print idle before print, printing, idle after print. 
+timePriorPhoto = 0 # Time of last interval based photo, in time.time() format. 
 
 ###########################
 # Methods begin here
@@ -164,8 +165,8 @@ def init():
 
 
 def onePhoto():
+    global frame
     frame += 1
-    print("Capturing frame {0:5d} at Z {1:7.2f} .".format(int(np.around(frame)),zn ))
     s="{0:08d}".format(int(np.around(frame)))
     fn = '/tmp/DuetLapse/IMG'+s+'.jpeg'
 
@@ -175,15 +176,26 @@ def onePhoto():
         cmd = 'raspistill -o '+fn
 
     subprocess.call(cmd, shell=True)
+    global timePriorPhoto
+    timePriorPhoto = time.time()
+
 
 def oneInterval():
-    if ('layer' in interval):
+    global frame
+    if ('layer' in detect):
+        global zo
         zn=printer.getCoords()['Z']
-        if (zn == zo):
-            return()
-        # Z changed, take a picture.
-        onePhoto()
+        if (not zn == zo):
+            # Z changed, take a picture.
+            print('Capturing frame {0:5d} at Z = {1:4.2f}'.format(int(np.around(frame)),zn))
+            onePhoto()
     zo = zn
+    global timePriorPhoto
+    elap = (time.time() - timePriorPhoto)
+    if ((seconds) and (seconds < elap)):
+        print('Capturing frame {0:5d} after {1:4.2f} seconds elapsed.'.format(int(np.around(frame)),elap))
+        onePhoto()
+
 
 def postProcess():
     print()
@@ -201,12 +213,8 @@ def postProcess():
 ###########################
 init()
 
-timeSleep = 1.01
-if (seconds > 0):
-    timeSleep = seconds
-
 while(1):
-    time.sleep(timeSleep) 
+    time.sleep(0.37)            # Intentionally not evenly divisible into one second. 
     status=printer.getStatus()
 
     if (printerState == 0):     # Idle before print started. 
@@ -215,7 +223,7 @@ while(1):
             print('End of print will be sensed, and frames will be converted into video.')
             printerState = 1
 
-    elif (printerState == 1):   # Acutally printing
+    elif (printerState == 1):   # Actually printing
         oneInterval()
         if ('idle' in status):
             printerState = 2
