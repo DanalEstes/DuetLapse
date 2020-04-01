@@ -17,14 +17,28 @@
 #   while taking pictures.  The print head will be in a random location. 
 #
 
-import os
+#import os
+#import numpy as np
+#import datetime
+
 import subprocess
 import sys
 import argparse
-import datetime
 import time
-import numpy as np
-import DuetWebAPI as DWA
+try: 
+    import DuetWebAPI as DWA
+except ImportError:
+    print("Python Library Module 'DuetWebAPI.py' is required. ")
+    print("Obtain from https://github.com/DanalEstes/DuetWebAPI ")
+    print("Place in same directory as script, or in Python libpath.")
+    exit(2)
+
+try: 
+    import numpy as np
+except ImportError:
+    print("Python Library Module 'numpy' is required. ")
+    print("Obtain via 'python3 -m pip install numpy'")
+    exit(2)
 
 
 # Globals.
@@ -39,15 +53,38 @@ printerState = 0 # State machine for print idle before print, printing, idle aft
 parser = argparse.ArgumentParser(description='Program to create time lapse video from camera pointed at Duet3D based printer.')
 parser.add_argument('-duet',type=str,nargs=1,help='Name or IP address of Duet printer.',required=True)
 parser.add_argument('-camera',type=str,nargs=1,choices=['usb','pi','web','dlsr'],default=['usb'])
-parser.add_argument('-interval',type=str,nargs=1,choices= ['nnn seconds', 'layer', 'layerPause'],default=['layer'])
+parser.add_argument('-interval',type=str,nargs=1,choices= ['nnn seconds', 'layer', 'pause'],default=['layer'])
 args=vars(parser.parse_args())
 duet     = args['duet'][0]
 camera   = args['camera'][0]
 interval = args['interval'][0]
 
-if(not 'usb' in camera):
+# Warn user if we havent' implemented something yet. 
+if ((not 'usb' in camera) and (not 'pi' in camera)):
     print('DuetLapse.py: error: Camera type '+camera+' not yet supported.')
-    sys.exit(2)
+    exit(2)
+
+if ((not 'layer' in interval)):
+    print('DuetLapse.py: error: Interval type '+interval+' not yet supported.')
+    exit(2)
+
+# Check for requsite commands
+if ('usb' in camera):
+    if (20 > len(subprocess.check_output('whereis fswebcam', shell=True))):
+        print("Module 'fswebcam' is required. ")
+        print("Obtain via 'sudo apt install fswebcam'")
+        exit(2)
+
+if ('pi' in camera):
+    if (20 > len(subprocess.check_output('whereis raspistill', shell=True))):
+        print("Module 'raspistill' is required. ")
+        print("Obtain via 'sudo apt install raspistill'")
+        exit(2)
+
+if (20 > len(subprocess.check_output('whereis ffmpeg', shell=True))):
+    print("Module 'ffmpeg' is required. ")
+    print("Obtain via 'sudo apt install ffmpeg'")
+    exit(2)
 
 # Get connected to the printer.
 
@@ -60,6 +97,16 @@ printer = DWA.DuetWebAPI('http://'+duet)
 
 print("Connected to a Duet V"+str(printer.printerType())+" printer at "+printer.baseURL())
 
+# Tell user options in use. 
+print()
+print("##################################")
+print("# Options in force for this run: #")
+print("# Camera   = {0:20s}#".format(camera))
+print("# Printer  = {0:20s}#".format(duet))
+print("# Interval = {0:20s}#".format(interval))
+print("##################################")
+print()
+
 # Clean up directory from past runs.
 try:
     subprocess.call('rm -r /tmp/DuetLapse', shell=True)
@@ -68,7 +115,6 @@ except:
 
 subprocess.call('mkdir /tmp/DuetLapse', shell=True)
 
-print('Interval selected = '+interval)
 print('Waiting for print to start.')
 
 while(1):
@@ -91,13 +137,21 @@ while(1):
         if ('layer' in interval):
             zn=printer.getCoords()['Z']
             if (not zn == zo):
-                # Z changed, take a picture. 
-                s="{0:08d}".format(int(np.around(frame)))
-                frame += 1
-                cmd = 'fswebcam --quiet -d v4l2:/dev/video0 -i 0 -r 800x600 -p YUYV --no-banner '
-                cmd += '/tmp/DuetLapse/IMG'+s+'.jpeg'
-                print("Capturing frame {0:5d} at Z {1:7.2f} .".format(int(np.around(frame)),zn ))
-                subprocess.call(cmd, shell=True)
+                # Z changed, take a picture.
+                if ('usb' in camera): 
+                    s="{0:08d}".format(int(np.around(frame)))
+                    frame += 1
+                    cmd = 'fswebcam --quiet -d v4l2:/dev/video0 -i 0 -r 800x600 -p YUYV --no-banner '
+                    cmd += '/tmp/DuetLapse/IMG'+s+'.jpeg'
+                    print("Capturing frame {0:5d} at Z {1:7.2f} .".format(int(np.around(frame)),zn ))
+                    subprocess.call(cmd, shell=True)
+                if ('pi' in camera): 
+                    s="{0:08d}".format(int(np.around(frame)))
+                    frame += 1
+                    cmd = 'raspistill '
+                    cmd += ' -o /tmp/DuetLapse/IMG'+s+'.jpeg'
+                    print("Capturing frame {0:5d} at Z {1:7.2f} .".format(int(np.around(frame)),zn ))
+                    subprocess.call(cmd, shell=True)
             zo = zn
 
     elif (printerState == 2):
