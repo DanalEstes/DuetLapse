@@ -15,7 +15,8 @@ Cameras:
 - [X] USB Cam
 - [X] Web Cam
 - [X] Pi Cam
-- [ ] DSLR Cam
+- [ ] DSLR Cam via USB
+- [ ] GPIO pin to trigger any kind of camera
 
 Other Features:
 - [X] Detect Layer change
