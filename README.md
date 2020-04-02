@@ -61,19 +61,21 @@ usage: DuetLapse.py -duet DUET
 
 ## Usage Notes
 
-The only required flag is -duet to specify the printer to which the script will connect.  This assumes defaults of "USB" camera and "layer" detection. Example:
+The only required flag is -duet to specify the printer to which the script will connect.  If not specified, camera defaults to "USB" and detection defaults to "layer". Example:
 ```
 ./DuetLapse.py -duet 192.168.7.101 
 ```
 
-Many options can be combined.  For example, the script can trigger on every few seconds and when detecting layer changes. It will inform you if you select conflicting options. 
+Many options can be combined.  For example, the script can trigger on both "seconds" and "detect layer". It will inform you if you select conflicting options. 
 
 Example: Use a webcam that requires a UserId and Password, trigger every 30 seconds, do not detect any other triggers:
 ```
 ./DuetLapse.py -camera web -weburl http://userid:password@192.168.7.140/cgi-bin/currentpic.cgi -duet 192.168.7.101 -seconds 20 -detect none
 ```
-
-
+Example: Default to USB camera and detecting layer changes, force pauses (at layer change) and move head to X10 Y10 before taking picture.
+```
+./DuetLapse.py -duet 192.168.7.101 -pause yes -movehead 10 10
+```
 
 
   
