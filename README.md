@@ -9,6 +9,21 @@ Triggers images based on time, layer change, or pause.  Works with existing paus
 
 As of April 2, 2020, ready for Alpha testing. Feedback via issues on Github or at Duet forum https://forum.duet3d.com/
 
+Status of Features.  Strikethrough features are planned, coming soon:
+
+USB Cam
+Web Cam
+Pi Cam
+~~DSLR Cam~~
+
+Detect Layer change
+Intervals in seconds
+~~Detect Pauses~~
+~~Force Pauses~~
+~~Position Head during Pauses~~
+Video output in H264 MP4
+~~Unique names for Videos~~
+
 ## Installation
 * Either:
   * git clone https://github.com/DanalEstes/DuetLapse
