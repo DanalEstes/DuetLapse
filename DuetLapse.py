@@ -34,10 +34,11 @@ except ImportError:
 
 
 # Globals.
-zo = 0             # Z coordinate old
-frame = 0          # Frame counter for file names
-printerState  = 0  # State machine for print idle before print, printing, idle after print. 
-timePriorPhoto = 0 # Time of last interval based photo, in time.time() format. 
+zo = 0                  # Z coordinate old
+frame = 0               # Frame counter for file names
+printerState  = 0       # State machine for print idle before print, printing, idle after print. 
+timePriorPhoto = 0      # Time of last interval based photo, in time.time() format. 
+alreadyPaused  = False  # If printer is paused, have we taken our actions yet? 
 
 ###########################
 # Methods begin here
@@ -68,10 +69,6 @@ def init():
     if ('dlsr' in camera):
         print('DuetLapse.py: error: Camera type '+camera+' not yet supported.')
         exit(2)
-
-    #if ((not 'layer' in interval)):
-    #    print('DuetLapse.py: error: Interval type '+interval+' not yet supported.')
-    #    exit(2)
 
     # Inform regarding valid and invalid combinations
     if ((seconds > 0) and (not 'none' in detect)):
@@ -152,12 +149,12 @@ def init():
     print()
     print("##################################")
     print("# Options in force for this run: #")
-    print("# Camera   = {0:20s}#".format(camera))
-    print("# Printer  = {0:20s}#".format(duet))
-    print("# Seconds  = {0:20s}#".format(str(seconds)))
-    print("# Detect   = {0:20s}#".format(detect))
-    print("# Pause    = {0:20s}#".format(pause))
-    print("# Movehead = {0:6.2f} {1:6.2f}       #".format(movehead[0],movehead[1]))
+    print("# camera   = {0:20s}#".format(camera))
+    print("# printer  = {0:20s}#".format(duet))
+    print("# seconds  = {0:20s}#".format(str(seconds)))
+    print("# detect   = {0:20s}#".format(detect))
+    print("# pause    = {0:20s}#".format(pause))
+    print("# movehead = {0:6.2f} {1:6.2f}       #".format(movehead[0],movehead[1]))
     print("##################################")
     print()
 
@@ -171,6 +168,27 @@ def init():
 
     print('Waiting for print to start on printer '+duet)
 
+def checkForcePause():
+    # Called when some other trigger has already happend, like layer or seconds.
+    # Checks to see if we should pause; if so, returns after pause and head movement complete.
+    global alreadyPaused
+    if (alreadyPaused): return
+    if (not 'yes' in pause): return
+    print('Requesting pause via M25')
+    printer.gCode('M25')    # Ask for a pause
+    printer.gCode('M400')   # Make sure the pause finishes
+    alreadyPaused = True 
+    if(not movehead == [0.0,0.0]):
+        print('Moving print head to X{0:4.2f} Y{1:4.2f}'.format(movehead[0],movehead[1]))
+        printer.gCode('G1 X{0:4.2f} Y{1:4.2f}'.format(movehead[0],movehead[1]))
+        printer.gCode('M400')   # Make sure the move finishes
+
+def unPause():
+    global alreadyPaused
+    if (alreadyPaused):
+        print('Requesting un pause via M24')
+        printer.gCode('M24')
+        alreadyPaused = False
 
 def onePhoto():
     global frame
@@ -197,15 +215,22 @@ def oneInterval():
         zn=printer.getCoords()['Z']
         if (not zn == zo):
             # Z changed, take a picture.
-            print('Capturing frame {0:5d} at Z = {1:4.2f}'.format(int(np.around(frame)),zn))
+            checkForcePause()
+            print('Capturing frame {0:5d} at X{1:4.2f} Y{2:4.2f} Z{3:4.2f}'.format(int(np.around(frame)),printer.getCoords()['X'],printer.getCoords()['Y'],printer.getCoords()['Z']))
             onePhoto()
         zo = zn
     global timePriorPhoto
     elap = (time.time() - timePriorPhoto)
     if ((seconds) and (seconds < elap)):
+        checkForcePause()
         print('Capturing frame {0:5d} after {1:4.2f} seconds elapsed.'.format(int(np.around(frame)),elap))
         onePhoto()
+    if ('pause' in detect):
+        if ('paused' in printer.getStatus()):
+            print('Pause Detected, capturing frame {0:5d}'.format(int(np.around(frame)),elap))
+            onePhoto()
 
+    unPause()            
 
 def postProcess():
     print()
