@@ -21,8 +21,8 @@ Other Features:
 - [X] Detect Layer change
 - [X] Intervals in seconds
 - [ ] Detect Pauses
-- [ ] Force Pauses
-- [ ] Position Head during Pauses
+- [X] Force Pauses
+- [X] Position Head during Pauses
 - [X] Video output in H264 MP4
 - [ ] Unique names for Videos
 
