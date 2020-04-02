@@ -50,13 +50,13 @@ Start the script, usually *./DuetLapse \[options\]*, before starting a print.  I
 
 ```
 usage: DuetLapse.py -duet DUET 
-                    \[-camera {usb,pi,web,dslr}\]
-                    \[-seconds SECONDS] 
-                    \[-detect {layer,pause,none}\]
-                    \[-pause {yes,no}] 
-                    \[-movehead X Y\]
-                    \[-weburl WEBURL]
-                    \[-h\]
+                    [-camera {usb,pi,web,dslr}]
+                    [-seconds nnn] 
+                    [-detect {layer,pause,none}]
+                    [-pause {yes,no}] 
+                    [-movehead nnn nnn] 
+                    [-weburl http://full-url-to-get-still-from-webcam]
+                    [-h]
 ```
 
 ## Usage Notes
