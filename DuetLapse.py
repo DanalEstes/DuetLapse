@@ -48,22 +48,24 @@ def init():
     # parse command line arguments
     parser = argparse.ArgumentParser(description='Program to create time lapse video from camera pointed at Duet3D based printer.')
     parser.add_argument('-duet',type=str,nargs=1,help='Name or IP address of Duet printer.',required=True)
-    parser.add_argument('-camera',type=str,nargs=1,choices=['usb','pi','web','dlsr'],default=['usb'])
+    parser.add_argument('-camera',type=str,nargs=1,choices=['usb','pi','web','dslr'],default=['usb'])
     parser.add_argument('-seconds',type=float,nargs=1,default=[0])
     parser.add_argument('-detect',type=str,nargs=1,choices= ['layer', 'pause', 'none'],default=['layer'])
     parser.add_argument('-pause',type=str,nargs=1,choices= ['yes', 'no'],default=['no'])
     parser.add_argument('-movehead',type=float,nargs=2,default=[0.0,0.0])
+    parser.add_argument('-weburl',type=str,nargs=1,default=[''])
     args=vars(parser.parse_args())
-    global duet, camera, seconds, detect, pause, movehead
+    global duet, camera, seconds, detect, pause, movehead, weburl
     duet     = args['duet'][0]
     camera   = args['camera'][0]
     seconds  = args['seconds'][0]
     detect   = args['detect'][0]
     pause    = args['pause'][0]
     movehead = args['movehead']
+    weburl   = args['weburl'][0]
 
     # Warn user if we havent' implemented something yet. 
-    if ((not 'usb' in camera) and (not 'pi' in camera)):
+    if ('dlsr' in camera):
         print('DuetLapse.py: error: Camera type '+camera+' not yet supported.')
         exit(2)
 
@@ -123,6 +125,12 @@ def init():
             print("Obtain via 'sudo apt install raspistill'")
             exit(2)
 
+    if ('web' in camera):
+        if (20 > len(subprocess.check_output('whereis wget', shell=True))):
+            print("Module 'wget' is required. ")
+            print("Obtain via 'sudo apt install wget'")
+            exit(2)
+
     if (20 > len(subprocess.check_output('whereis ffmpeg', shell=True))):
         print("Module 'ffmpeg' is required. ")
         print("Obtain via 'sudo apt install ffmpeg'")
@@ -174,6 +182,8 @@ def onePhoto():
         cmd = 'fswebcam --quiet -d v4l2:/dev/video0 -i 0 -r 800x600 -p YUYV --no-banner '+fn
     if ('pi' in camera): 
         cmd = 'raspistill -o '+fn
+    if ('web' in camera): 
+        cmd = 'wget --auth-no-challenge -nv -O '+fn+' '+weburl
 
     subprocess.call(cmd, shell=True)
     global timePriorPhoto
@@ -189,7 +199,7 @@ def oneInterval():
             # Z changed, take a picture.
             print('Capturing frame {0:5d} at Z = {1:4.2f}'.format(int(np.around(frame)),zn))
             onePhoto()
-    zo = zn
+        zo = zn
     global timePriorPhoto
     elap = (time.time() - timePriorPhoto)
     if ((seconds) and (seconds < elap)):
