@@ -5,6 +5,10 @@ Designed to run on a Raspberry Pi, may be adaptable to other platforms. Supports
 
 Triggers images based on time, layer change, or pause.  Works with existing pauses in G-Code, or can force pauses at other trigger events. Optionally moves head to a specified position before capturing paused images. 
 
+## Status
+
+As of April 2, 2020, ready for Alpha testing. Feedback via issues on Github or at Duet forum https://forum.duet3d.com/
+
 ## Installation
 * Either:
   * git clone https://github.com/DanalEstes/DuetLapse
