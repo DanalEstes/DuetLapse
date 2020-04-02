@@ -11,18 +11,20 @@ As of April 2, 2020, ready for Alpha testing. Feedback via issues on Github or a
 
 Status of Features.  Strikethrough features are planned, coming soon:
 
-USB Cam
-Web Cam
-Pi Cam
-~~DSLR Cam~~
+Cameras:
+- [X] USB Cam
+- [X] Web Cam
+- [X] Pi Cam
+- [ ] DSLR Cam
 
-Detect Layer change
-Intervals in seconds
-~~Detect Pauses~~
-~~Force Pauses~~
-~~Position Head during Pauses~~
-Video output in H264 MP4
-~~Unique names for Videos~~
+Other Features:
+- [X] Detect Layer change
+- [X] Intervals in seconds
+- [ ] Detect Pauses
+- [ ] Force Pauses
+- [ ] Position Head during Pauses
+- [X] Video output in H264 MP4
+- [ ] Unique names for Videos
 
 ## Installation
 * Either:
