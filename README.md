@@ -26,6 +26,7 @@ Other Features:
 - [X] Position Head during Pauses
 - [X] Video output in H264 MP4
 - [X] Unique names for Videos
+- [ ] Add a timestamp in one corner of vid. Analog or Digital? Or option. 
 
 ## Installation
 * Either:
