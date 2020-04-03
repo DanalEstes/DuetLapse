@@ -25,7 +25,7 @@ Other Features:
 - [X] Force Pauses
 - [X] Position Head during Pauses
 - [X] Video output in H264 MP4
-- [ ] Unique names for Videos
+- [X] Unique names for Videos
 
 ## Installation
 * Either:
