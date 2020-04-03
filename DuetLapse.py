@@ -235,11 +235,12 @@ def oneInterval():
 def postProcess():
     print()
     print("Now making {0:d} frames into a video at 10 frames per second.".format(int(np.around(frame))))
-    print("This can take a while...")
-    cmd='ffmpeg -r 10 -i /tmp/DuetLapse/IMG%08d.jpeg -vcodec libx264 -crf 25 -s 800x600 -pix_fmt yuv420p -y -v 8 ~/DuetLapse.mp4'
+    if (250 < frame): print("This can take a while...")
+    fn ='~/DuetLapse'+time.strftime('%m%d%y%H%M',time.localtime())+'.mp4'
+    cmd  = 'ffmpeg -r 10 -i /tmp/DuetLapse/IMG%08d.jpeg -vcodec libx264 -crf 25 -s 800x600 -pix_fmt yuv420p -y -v 8 '+fn
     subprocess.call(cmd, shell=True)
-    print("Video processing complete.")
-    print("Video file is in home directory, named DuetLapse.mp4")
+    print('Video processing complete.')
+    print('Video file is in home directory, named '+fn)
     exit()    
 
 
