@@ -29,7 +29,7 @@ try:
     import numpy as np
 except ImportError:
     print("Python Library Module 'numpy' is required. ")
-    print("Obtain via 'python3 -m pip install numpy'")
+    print("Obtain via 'sudo python3 -m pip install numpy'")
     exit(2)
 
 
@@ -159,11 +159,7 @@ def init():
     print()
 
     # Clean up directory from past runs.  Be silent if it does not exist. 
-    try:
-        subprocess.call('rm -r /tmp/DuetLapse', shell=True)
-    except: 
-        next
-
+    subprocess.call('rm -r /tmp/DuetLapse > /dev/null 2>&1', shell=True)
     subprocess.call('mkdir /tmp/DuetLapse', shell=True)
 
     print('Waiting for print to start on printer '+duet)
