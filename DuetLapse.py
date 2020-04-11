@@ -71,7 +71,8 @@ def init():
     movehead = args['movehead']
     weburl   = args['weburl'][0]
     dontwait = args['dontwait']
-    camparms = args['camparms']
+    camparms = ['']
+    if ('camparms' in args.keys()): camparms = args['camparms']
     camparms = ' '.join(camparms)
 
     # Warn user if we havent' implemented something yet. 
@@ -258,32 +259,39 @@ init()
     
 if (dontwait):
     print('Not Waiting for print to start on printer '+duet)
-    print('Will take pictures until a print starts, ')
+    print('Will take pictures from now until a print starts, ')
     print('  continue to take pictures throughout printing, ')
 else:
     print('Waiting for print to start on printer '+duet)
     print('Will take pictures when printing starts, ')
 print('  and make video when printing ends.')
+print('Or, press Ctrl+C one time to move directly to conversion step.')
+print('')
+
 
 timePriorPhoto = time.time()
 
-while(1):
-    time.sleep(.77)            # Intentionally not evenly divisible into one second. 
-    status=printer.getStatus()
+try: 
+    while(1):
+        time.sleep(.77)            # Intentionally not evenly divisible into one second. 
+        status=printer.getStatus()
 
-    if (printerState == 0):     # Idle before print started. 
-        if (dontwait):
+        if (printerState == 0):     # Idle before print started. 
+            if (dontwait):
+                oneInterval()
+            if ('processing' in status):
+                print('Print start sensed.')
+                print('End of print will be sensed, and frames will be converted into video.')
+                print('Or, press Ctrl+C one time to move directly to conversion step.')
+                print('')
+                printerState = 1
+
+        elif (printerState == 1):   # Actually printing
             oneInterval()
-        if ('processing' in status):
-            print('Print start sensed.')
-            print('End of print will be sensed, and frames will be converted into video.')
-            printerState = 1
+            if ('idle' in status):
+                printerState = 2
 
-    elif (printerState == 1):   # Actually printing
-        oneInterval()
-        if ('idle' in status):
-            printerState = 2
-
-    elif (printerState == 2): 
-        postProcess()
-
+        elif (printerState == 2): 
+            postProcess()
+except KeyboardInterrupt:
+    postProcess()    
