@@ -208,7 +208,7 @@ def onePhoto():
     if ('pi' in camera): 
         cmd = 'raspistill  '+camparms+' -o '+fn
     if ('web' in camera): 
-        cmd = 'wget --auth-no-challenge -nv '+camparms+' -O '+fn+' '+weburl
+        cmd = 'wget --auth-no-challenge -nv '+camparms+' -O '+fn+' "'+weburl+'" '
 
     subprocess.call(cmd, shell=True)
     global timePriorPhoto
