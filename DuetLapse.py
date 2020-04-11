@@ -47,7 +47,7 @@ alreadyPaused  = False  # If printer is paused, have we taken our actions yet?
 
 def init():
     # parse command line arguments
-    parser = argparse.ArgumentParser(description='Program to create time lapse video from camera pointed at Duet3D based printer.')
+    parser = argparse.ArgumentParser(description='Program to create time lapse video from camera pointed at Duet3D based printer.', allow_abbrev=False)
     parser.add_argument('-duet',type=str,nargs=1,help='Name or IP address of Duet printer.',required=True)
     parser.add_argument('-camera',type=str,nargs=1,choices=['usb','pi','web','dslr'],default=['usb'])
     parser.add_argument('-seconds',type=float,nargs=1,default=[0])
@@ -55,8 +55,14 @@ def init():
     parser.add_argument('-pause',type=str,nargs=1,choices= ['yes', 'no'],default=['no'])
     parser.add_argument('-movehead',type=float,nargs=2,default=[0.0,0.0])
     parser.add_argument('-weburl',type=str,nargs=1,default=[''])
+    #parser.add_argument('--', '-camparm',type=str,nargs=argparse.REMAINDER,default=[''], dest='camparm', help='Extra parms to pass to fswebcam, raspistill, or wget.  Must come last. ')
+    parser.add_argument('-dontwait',action='store_true',help='Capture images immediately.')
+    subparsers = parser.add_subparsers(title='subcommands',help='DuetLapse camparms -h  for more help')
+    pcamparm   = subparsers.add_parser('camparms',description='camparm -parms xxx where xxx is passed to fswebcam, raspistill, or wget.')
+    pcamparm.add_argument('--','-parms', type=str,nargs=argparse.REMAINDER,default=[''], dest='camparms', help='Extra parms to pass to fswebcam, raspistill, or wget.')
     args=vars(parser.parse_args())
-    global duet, camera, seconds, detect, pause, movehead, weburl
+
+    global duet, camera, seconds, detect, pause, movehead, weburl, dontwait, camparms
     duet     = args['duet'][0]
     camera   = args['camera'][0]
     seconds  = args['seconds'][0]
@@ -64,6 +70,9 @@ def init():
     pause    = args['pause'][0]
     movehead = args['movehead']
     weburl   = args['weburl'][0]
+    dontwait = args['dontwait']
+    camparms = args['camparms']
+    camparms = ' '.join(camparms)
 
     # Warn user if we havent' implemented something yet. 
     if ('dlsr' in camera):
@@ -154,7 +163,9 @@ def init():
     print("# seconds  = {0:20s}#".format(str(seconds)))
     print("# detect   = {0:20s}#".format(detect))
     print("# pause    = {0:20s}#".format(pause))
+    print("# camparms = {0:20s}#".format(camparms))
     print("# movehead = {0:6.2f} {1:6.2f}       #".format(movehead[0],movehead[1]))
+    print("# dontwait = {0:20s}#".format(str(dontwait)))
     print("##################################")
     print()
 
@@ -162,7 +173,7 @@ def init():
     subprocess.call('rm -r /tmp/DuetLapse > /dev/null 2>&1', shell=True)
     subprocess.call('mkdir /tmp/DuetLapse', shell=True)
 
-    print('Waiting for print to start on printer '+duet)
+
 
 def checkForcePause():
     # Called when some other trigger has already happend, like layer or seconds.
@@ -193,11 +204,11 @@ def onePhoto():
     fn = '/tmp/DuetLapse/IMG'+s+'.jpeg'
 
     if ('usb' in camera): 
-        cmd = 'fswebcam --quiet -d v4l2:/dev/video0 -i 0 -r 800x600 -p YUYV --no-banner '+fn
+        cmd = 'fswebcam --quiet -d v4l2:/dev/video0 -i 0 -r 800x600 --no-banner '+camparms+' '+fn
     if ('pi' in camera): 
-        cmd = 'raspistill -o '+fn
+        cmd = 'raspistill  '+camparms+' -o '+fn
     if ('web' in camera): 
-        cmd = 'wget --auth-no-challenge -nv -O '+fn+' '+weburl
+        cmd = 'wget --auth-no-challenge -nv '+camparms+' -O '+fn+' '+weburl
 
     subprocess.call(cmd, shell=True)
     global timePriorPhoto
@@ -233,7 +244,7 @@ def postProcess():
     print("Now making {0:d} frames into a video at 10 frames per second.".format(int(np.around(frame))))
     if (250 < frame): print("This can take a while...")
     fn ='~/DuetLapse'+time.strftime('%m%d%y%H%M',time.localtime())+'.mp4'
-    cmd  = 'ffmpeg -r 10 -i /tmp/DuetLapse/IMG%08d.jpeg -vcodec libx264 -crf 25 -s 800x600 -pix_fmt yuv420p -y -v 8 '+fn
+    cmd  = 'ffmpeg -r 10 -i /tmp/DuetLapse/IMG%08d.jpeg -vcodec libx264 -s 800x600 -y -v 8 '+fn
     subprocess.call(cmd, shell=True)
     print('Video processing complete.')
     print('Video file is in home directory, named '+fn)
@@ -244,12 +255,25 @@ def postProcess():
 # Main begins here
 ###########################
 init()
+    
+if (dontwait):
+    print('Not Waiting for print to start on printer '+duet)
+    print('Will take pictures until a print starts, ')
+    print('  continue to take pictures throughout printing, ')
+else:
+    print('Waiting for print to start on printer '+duet)
+    print('Will take pictures when printing starts, ')
+print('  and make video when printing ends.')
+
+timePriorPhoto = time.time()
 
 while(1):
-    time.sleep(0.37)            # Intentionally not evenly divisible into one second. 
+    time.sleep(.77)            # Intentionally not evenly divisible into one second. 
     status=printer.getStatus()
 
     if (printerState == 0):     # Idle before print started. 
+        if (dontwait):
+            oneInterval()
         if ('processing' in status):
             print('Print start sensed.')
             print('End of print will be sensed, and frames will be converted into video.')
