@@ -30,9 +30,10 @@ Other Features:
 - [ ] Add a timestamp in one corner of vid. Analog or Digital? Or option. 
 - [ ] While gathering stills, skip frames that cause errors, without terminating entire script. 
 - [ ] Run in a daemon like status, supporting multiple print jobs, one after another. 
+- [X] Allow override of command line switches for still capture programs. (fswebcam, raspistill, wget)
+- [X] Allow override of command line switches for ffmpeg 
 
 ## Installation
-* Make a directory to hold the scripts, and change to that directory
 * mkdir DuetLapse
 * cd DuetLapse
 * wget https://raw.githubusercontent.com/DanalEstes/DuetLapse/master/DuetLapse.py
@@ -57,14 +58,28 @@ Other Features:
 Start the script, usually *./DuetLapse \[options\]*, before starting a print.  It will connect to the printer and wait for the printer to change status from "Idle" to "Processing" and then begin capturing still images per the flag settings.  When the printer then goes "idle" again (i.e. end of print), it will process the still images into a video. 
 
 ```
-usage: DuetLapse.py -duet DUET 
-                    [-camera {usb,pi,web,dslr}]
-                    [-seconds nnn] 
-                    [-detect {layer,pause,none}]
-                    [-pause {yes,no}] 
-                    [-movehead nnn nnn] 
-                    [-weburl http://full-url-to-get-still-from-webcam]
-                    [-h]
+usage: DuetLapse.py [-h] -duet DUET [-camera {usb,pi,web,dslr}]
+                    [-seconds SECONDS] [-detect {layer,pause,none}]
+                    [-pause {yes,no}] [-movehead MOVEHEAD MOVEHEAD]
+                    [-weburl WEBURL] [-dontwait]
+                    {camparms,vidparms} ...
+
+Program to create time lapse video from camera pointed at Duet3D based
+printer.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -duet DUET            Name or IP address of Duet printer.
+  -camera {usb,pi,web,dslr}
+  -seconds SECONDS
+  -detect {layer,pause,none}
+  -pause {yes,no}
+  -movehead MOVEHEAD MOVEHEAD
+  -weburl WEBURL
+  -dontwait             Capture images immediately.
+
+subcommands:
+  {camparms,vidparms}   DuetLapse camparms -h or vidparms -h for more help
 ```
 
 ## Usage Notes
