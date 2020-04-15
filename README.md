@@ -7,8 +7,8 @@ Triggers images based on time, layer change, or pause.  Works with existing paus
 
 ## Status
 
-As of April 2, 2020, ready for Alpha testing. Feedback via issues on Github or at Duet forum https://forum.duet3d.com/
-As of April 14, 2020, moving to Beta test status.  I believe the Alpha testers have helped clear out the funadmental issues, thank you for your feedback. 
+As of April 14, 2020, moving to Beta test status.  I believe the Alpha testers have helped clear out the funadmental issues, thank you for your feedback. ~~As of April 2, 2020, ready for Alpha testing.~~ Feedback via issues on Github or at Duet forum https://forum.duet3d.com/
+
 
 Status of Features.  Unchecked features are planned, coming soon:
 
