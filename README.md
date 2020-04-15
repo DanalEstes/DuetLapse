@@ -8,6 +8,7 @@ Triggers images based on time, layer change, or pause.  Works with existing paus
 ## Status
 
 As of April 2, 2020, ready for Alpha testing. Feedback via issues on Github or at Duet forum https://forum.duet3d.com/
+As of April 14, 2020, moving to Beta test status.  I believe the Alpha testers have helped clear out the funadmental issues, thank you for your feedback. 
 
 Status of Features.  Unchecked features are planned, coming soon:
 
@@ -27,20 +28,25 @@ Other Features:
 - [X] Video output in H264 MP4
 - [X] Unique names for Videos
 - [ ] Add a timestamp in one corner of vid. Analog or Digital? Or option. 
+- [ ] While gathering stills, skip frames that cause errors, without terminating entire script. 
+- [ ] Run in a daemon like status, supporting multiple print jobs, one after another. 
 
 ## Installation
-* Either:
-  * git clone https://github.com/DanalEstes/DuetLapse
-  * Right click and "Save as" https://github.com/DanalEstes/DuetLapse/blob/master/DuetLapse.py 
-* Copy included module https://github.com/DanalEstes/DuetWebAPI/blob/master/DuetWebAPI.py to the same directory, or to anywhere in python's libpath. 
+* Make a directory to hold the scripts, and change to that directory
+* mkdir DuetLapse
+* cd DuetLapse
+* wget https://raw.githubusercontent.com/DanalEstes/DuetLapse/master/DuetLapse.py
 * chmod 744 DuetLapse.py
+* wget https://raw.githubusercontent.com/DanalEstes/DuetWebAPI/master/DuetWebAPI.py
 
 
 ## Corequisites 
 
-* Python3
+* Python3 (already installed on most Pi images)
+* Duet printer must be RRF V2, RRF V3, or RRF V3 + Pi
+* May run on, but NOT required to run on, the printer's Pi in a RRF V3 + Pi configuration
 * Duet printer must be reachable via network
-* ffmpeg
+* ffmpeg (always)
 * Depending on camera type, one of
   * fswebcam (for USB cameras)
   * raspistill (for Pi cam or Ardu cam)
@@ -62,6 +68,8 @@ usage: DuetLapse.py -duet DUET
 ```
 
 ## Usage Notes
+
+This script is in rapid development, and runnith ./DuetLapse.py -h is likely to give more recent usage information. 
 
 The only required flag is -duet to specify the printer to which the script will connect.  If not specified, camera defaults to "USB" and detection defaults to "layer". Example:
 ```
