@@ -235,11 +235,11 @@ def oneInterval():
     global frame
     if ('layer' in detect):
         global zo
-        zn=printer.getCoords()['Z']
+        zn=printer.getLayer()
         if (not zn == zo):
             # Z changed, take a picture.
             checkForcePause()
-            print('Capturing frame {0:5d} at X{1:4.2f} Y{2:4.2f} Z{3:4.2f}'.format(int(np.around(frame)),printer.getCoords()['X'],printer.getCoords()['Y'],printer.getCoords()['Z']))
+            print('Capturing frame {0:5d} at X{1:4.2f} Y{2:4.2f} Z{3:4.2f} Layer {4:d}'.format(int(np.around(frame)),printer.getCoords()['X'],printer.getCoords()['Y'],printer.getCoords()['Z'],zn))
             onePhoto()
         zo = zn
     global timePriorPhoto
@@ -250,10 +250,11 @@ def oneInterval():
         onePhoto()
     if ('pause' in detect):
         if ('paused' in printer.getStatus()):
+            global alreadyPaused
+            alreadyPaused = True
             print('Pause Detected, capturing frame {0:5d}'.format(int(np.around(frame)),elap))
             onePhoto()
-
-    unPause()            
+        unPause()            
 
 def postProcess():
     print()
