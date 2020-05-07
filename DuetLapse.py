@@ -34,7 +34,7 @@ except ImportError:
 
 
 # Globals.
-zo = 0                  # Z coordinate old
+zo = -1                 # Z coordinate old
 frame = 0               # Frame counter for file names
 printerState  = 0       # State machine for print idle before print, printing, idle after print. 
 timePriorPhoto = 0      # Time of last interval based photo, in time.time() format. 
@@ -202,7 +202,6 @@ def unPause():
     if (alreadyPaused):
         print('Requesting un pause via M24')
         printer.gCode('M24')
-        alreadyPaused = False
 
 def onePhoto():
     global frame
@@ -217,7 +216,7 @@ def onePhoto():
             cmd = 'fswebcam '+camparms+' '+fn
     if ('pi' in camera): 
         if (camparms == ''):
-            cmd = 'raspistill -o '+fn
+            cmd = 'raspistill -t 1 -ex sports -mm matrix -n -o '+fn
         else:
             cmd = 'raspistill  '+camparms+' -o '+fn
     if ('web' in camera): 
@@ -232,29 +231,34 @@ def onePhoto():
 
 
 def oneInterval():
+    global alreadyPaused
     global frame
     if ('layer' in detect):
         global zo
         zn=printer.getLayer()
         if (not zn == zo):
-            # Z changed, take a picture.
+            # Layer changed, take a picture.
             checkForcePause()
             print('Capturing frame {0:5d} at X{1:4.2f} Y{2:4.2f} Z{3:4.2f} Layer {4:d}'.format(int(np.around(frame)),printer.getCoords()['X'],printer.getCoords()['Y'],printer.getCoords()['Z'],zn))
             onePhoto()
         zo = zn
     global timePriorPhoto
     elap = (time.time() - timePriorPhoto)
+
     if ((seconds) and (seconds < elap)):
         checkForcePause()
         print('Capturing frame {0:5d} after {1:4.2f} seconds elapsed.'.format(int(np.around(frame)),elap))
         onePhoto()
-    if ('pause' in detect):
-        if ('paused' in printer.getStatus()):
-            global alreadyPaused
+
+    if (('pause' in detect) and ('paused' in printer.getStatus()) and not alreadyPaused):
             alreadyPaused = True
             print('Pause Detected, capturing frame {0:5d}'.format(int(np.around(frame)),elap))
             onePhoto()
-        unPause()            
+            unPause()   
+
+    if (alreadyPaused and (not 'paused' in printer.getStatus()) ):
+        alreadyPaused = False
+         
 
 def postProcess():
     print()
