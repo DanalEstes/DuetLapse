@@ -30,6 +30,7 @@ try:
 except ImportError:
     print("Python Library Module 'numpy' is required. ")
     print("Obtain via 'sudo python3 -m pip install numpy'")
+    print("Obtain pip via 'sudo apt install python-pip'")
     exit(2)
 
 
@@ -48,7 +49,7 @@ alreadyPaused  = False  # If printer is paused, have we taken our actions yet?
 def init():
     # parse command line arguments
     parser = argparse.ArgumentParser(description='Program to create time lapse video from camera pointed at Duet3D based printer.', allow_abbrev=False)
-    parser.add_argument('-duet',type=str,nargs=1,help='Name or IP address of Duet printer.',required=True)
+    parser.add_argument('-duet',type=str,nargs=1,default=['localhost'],help='Name or IP address of Duet printer.')
     parser.add_argument('-camera',type=str,nargs=1,choices=['usb','pi','web','dslr'],default=['usb'])
     parser.add_argument('-seconds',type=float,nargs=1,default=[0])
     parser.add_argument('-detect',type=str,nargs=1,choices= ['layer', 'pause', 'none'],default=['layer'])
